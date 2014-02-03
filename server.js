@@ -34,7 +34,7 @@ app.post('/file/:name', util.callback(function(req) {
 app.get('/tail/:from', util.callback(function(req) {
     return Q.ninvoke(fs, 'readdir', config.loggingDir).then(function(files) {
         if (files.length == 0) {
-            return { text: '', next: 0 };
+            return { text: 'Waiting for log file to appear\n', next: 0 };
         }
         return Q.ninvoke(fs, 'open', config.loggingDir + '\\' + files[0], 'r').then(function(fd) {
             var b = new Buffer(1024);
@@ -43,6 +43,8 @@ app.get('/tail/:from', util.callback(function(req) {
                 return { text: b.toString('utf8', 0, bytesRead[0]), next: pos + bytesRead[0] };
             });
         });
+    }).catch(function() {
+        return { text: 'Waiting for logging directory to be created\n', next: 0 };
     });
 }));
 
