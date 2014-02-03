@@ -1,0 +1,18 @@
+
+DataDir=C:\ProgramData\Prisym360InstallData
+
+DbInstallerPage_databaseType=SQL Server LocalDB
+DbInstallerPage_databaseFilename=$(DataDir)\Data\Build-$(BuildNumber)\MainData.mdf
+DbInstallerPage_databaseName=NextGenAutoInst$(BuildNumber)
+DbInstallerPage_databaseDescription=whatEVER
+DbInstallerPage_Audit-databaseType=SQL Server LocalDB
+DbInstallerPage_Audit-databaseFilename=$(DataDir)\Data\Build-$(BuildNumber)\AuditData.mdf
+DbInstallerPage_Audit-databaseName=NextGenAutoInstAudit$(BuildNumber)
+DbInstallerPageRetries=3
+
+ModulesPageSelect=!notification,proxysiteproxyserver
+
+SearchIndexerInstallPageDirectory=$(DataDir)\Search\Build-$(BuildNumber)
+
+IISInstallerPageVirtualDirectory=Prisym360
+AllPagesNext=1
