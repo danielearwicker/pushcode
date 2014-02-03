@@ -20,7 +20,7 @@ app.get('/version', util.callback(function() {
         return util.forEach(files, function(fileName) {
             return Q.ninvoke(fs, 'unlink', config.loggingDir + '\\' + fileName);
         });
-    }).then(function() {
+    }).catch(function() { return true; }).then(function() {
         return Q({ version: '0.1' });
     });
 }));
