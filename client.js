@@ -8,20 +8,41 @@ var util = require('./util.js');
 
 var targetUrl = 'http://' + config.targetMachine + ':' + config.port + '/';
 
-util.request({ uri: config.jenkinsUrl, auth: config.jenkinsAuth }).then(function(body) {
-        
-    var m = body.match(/\<a\s*href=\"(PRISYM%20360\-.+\.exe)\"\>/);
-    if (!m || m.length < 2) {
-        throw new Error('Could not find installer link on page');
+var localBuildFile = process.argv[2];
+
+var bundleBuildFile = 'bundle/installer.exe';
+
+(function() {
+
+    if (localBuildFile) {
+        var d = Q.defer();
+        fs.createReadStream(localBuildFile)
+            .pipe(fs.createWriteStream(bundleBuildFile))
+            .on('finish', d.resolve);
+        return d.promise;
     }
-    return m[1];
-        
-}).then(function(installerName) {
 
-    console.log('Downloading ' + installerName);
-    return util.request({ uri: config.jenkinsUrl + installerName, auth: config.jenkinsAuth }, fs.createWriteStream('bundle/installer.exe'));
+    return util.request({ uri: config.jenkinsUrl, auth: config.jenkinsAuth }).then(function(body) {
+            
+        var m = body.match(/\<a\s*href=\"(PRISYM%20360\-.+\.exe)\"\>/);
+        if (!m || m.length < 2) {
+            throw new Error('Could not find installer link on page');
+        }
+        return m[1];
+            
+    }).then(function(installerName) {
 
-}).then(function() {
+        console.log('Downloading ' + installerName);
+        return util.request({ 
+            uri: config.jenkinsUrl + installerName, 
+            auth: config.jenkinsAuth }, 
+            fs.createWriteStream(bundleBuildFile)
+        );
+    });
+
+})().then(function() {
+
+    
 
     return util.until(function() {
         return util.request(targetUrl + 'version').then(function(result) {
@@ -37,11 +58,17 @@ util.request({ uri: config.jenkinsUrl, auth: config.jenkinsAuth }).then(function
     return Q.ninvoke(fs, 'readdir', 'bundle').then(function(files) {
         return util.forEach(files, function(fileName) {
             console.log('Uploading ' + fileName);
-            return Q.ninvoke(fs, 'readFile', 'bundle/' + fileName).then(function(fileData) {
-                return util.request({
-                    method: 'POST',
-                    uri: targetUrl + 'file/' + fileName,
-                    body: fileData
+            
+            return util.until(function() {
+                return Q.ninvoke(fs, 'readFile', 'bundle/' + fileName).then(function(fileData) {
+                    return util.request({
+                        method: 'POST',
+                        uri: targetUrl + 'file/' + fileName,
+                        body: fileData
+                    });
+                }).catch(function(err) {
+                    console.log('Error: ' + err.message + ' - retrying...');
+                    return Q(false);
                 });
             });
         });
