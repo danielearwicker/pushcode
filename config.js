@@ -3,7 +3,7 @@ module.exports = {
     
     port: 81,
 
-    targetMachine: 'localhost',
+    targetMachine: 'earwicker.cloudapp.net',
 
     loggingDir: 'C:\\Users\\danielearwicker\\AppData\\Local\\PRISYMSetupLogs',
 

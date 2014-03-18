@@ -1,13 +1,22 @@
 
 DataDir=C:\ProgramData\Prisym360InstallData
 
-DbInstallerPage_databaseType=SQL Server LocalDB
-DbInstallerPage_databaseFilename=$(DataDir)\Data\Build-$(BuildNumber)\MainData.mdf
-DbInstallerPage_databaseName=NextGenAutoInst$(BuildNumber)
 DbInstallerPage_databaseDescription=whatEVER
-DbInstallerPage_Audit-databaseType=SQL Server LocalDB
-DbInstallerPage_Audit-databaseFilename=$(DataDir)\Data\Build-$(BuildNumber)\AuditData.mdf
-DbInstallerPage_Audit-databaseName=NextGenAutoInstAudit$(BuildNumber)
+
+DbInstallerPage_databaseType=SQL Server
+DbInstallerPage_sqlServer=EARWICKER
+DbInstallerPage_databaseName=P360MAIN
+DbInstallerPage_nativeSecurity=yes
+DbInstallerPage_sqlUsername=sa
+DbInstallerPage_password=Help8585
+
+DbInstallerPage_Audit-databaseType=SQL Server
+DbInstallerPage_Audit-sqlServer=EARWICKER
+DbInstallerPage_Audit-databaseName=P360AUDIT
+DbInstallerPage_Audit-nativeSecurity=yes
+DbInstallerPage_Audit-sqlUsername=sa
+DbInstallerPage_Audit-password=Help8585
+
 DbInstallerPageRetries=3
 
 ModulesPageSelect=!notification,proxysiteproxyserver
