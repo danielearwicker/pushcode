@@ -42,8 +42,6 @@ var bundleBuildFile = 'bundle/installer.exe';
 
 })().then(function() {
 
-    
-
     return util.until(function() {
         return util.request(targetUrl + 'version').then(function(result) {
             return typeof result.version === 'string';
@@ -76,7 +74,20 @@ var bundleBuildFile = 'bundle/installer.exe';
 
 }).then(function() {
 
-    console.log('All uploads done, launching installer...');
+    console.log('Attempting uninstall...');
+    return util.request({
+        uri: targetUrl + 'exec',
+        method: 'POST',
+        json: {
+			wait: true,
+            program: '"%P360HOME%\..\..\InstallationState\setup.exe"',
+            arguments: ['/uninstall', 'AllPagesNext=1']
+        }
+    });
+	
+}).then(function() {
+
+    console.log('Launching installer...');
     return util.request({
         uri: targetUrl + 'exec',
         method: 'POST',
@@ -115,3 +126,13 @@ var bundleBuildFile = 'bundle/installer.exe';
     console.error('Error', err);
 });
 
+
+
+/*
+var config = {
+    user: 'sa',
+    password: 'Help8585',
+    server: 'localhost',
+    database: 'P360MAIN'
+};
+*/

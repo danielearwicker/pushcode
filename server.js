@@ -8,6 +8,7 @@ var child_process = require("child_process");
 
 var config = require('./config.js');
 var util = require('./util.js');
+var resetdb = require('./resetdb.js');
 
 var app = express();
 
@@ -50,7 +51,16 @@ app.get('/tail/:from', util.callback(function(req) {
 
 app.post('/exec', util.callback(function(req) {
     var cp = child_process.spawn(req.body.program, req.body.arguments, { cwd: 'uploads' });
-    return Q({ pid: cp.pid });
+	if (!req.body.wait) {
+		return Q({ pid: cp.pid });
+	}
+	var d = Q.defer();
+	cp.on('exit', d.resolve);
+    return d.promise;
+}));
+
+app.post('/resetdb', util.callback(function(req) {
+	return resetdb.withConfig(req.config);
 }));
 
 http.createServer(app).listen(config.port, function() {
