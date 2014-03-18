@@ -162,7 +162,7 @@ var bundleBuildFile = 'bundle/installer.exe';
             pos = tailResult.next;
            
             while (lineBuffer.ready()) {
-                var line = lineBuffer.read();
+                var line = lineBuffer.read().trim();
                 console.log(line);
                 
                 if (line == config.startOfLog) {

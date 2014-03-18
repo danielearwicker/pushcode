@@ -49,13 +49,15 @@ app.post('/tail', util.callback(function(req) {
             var pos = (!req.body || req.body.file != newest) ? 0 
                         : parseInt(req.body.pos, 10);
             return Q.ninvoke(fs, 'read', fd, b, 0, b.length, pos).then(function(bytesRead) {
+                fs.closeSync(fd);
                 return {
                     text: b.toString('utf8', 0, bytesRead[0]),
                     next: { file: newest, pos: pos + bytesRead[0] }
                 };
             });
         });
-    }).catch(function() {
+    }).catch(function(x) {
+        console.log('Error in tail', x);
         return { text: 'Waiting for logging directory to be created\n', next: null };
     });
 }));

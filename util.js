@@ -71,7 +71,8 @@ exports.request = function(opts, saveTo) {
             if (err) {
                 d.reject(err);
             } else {
-                if (result.headers['content-type'].indexOf('/json') != -1) {
+                var contentType = result.headers['content-type'];
+                if (contentType && contentType.indexOf('/json') != -1) {
                     body = typeof body === 'string' ? JSON.parse(body) : body;
                 }
                 d.resolve(body);
