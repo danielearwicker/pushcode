@@ -74,17 +74,43 @@ var bundleBuildFile = 'bundle/installer.exe';
 
 }).then(function() {
 
+    console.log('Killing chrome...');
+    return util.request({
+        uri: targetUrl + 'exec',
+        method: 'POST',
+        json: {
+			wait: true,
+            program: 'taskkill',
+            arguments: ['/F', '/IM', 'chrome.exe']
+        }
+    });
+    
+}).then(function(chromeResults) {
+
+    console.log(chromeResults);
+
     console.log('Attempting uninstall...');
     return util.request({
         uri: targetUrl + 'exec',
         method: 'POST',
         json: {
 			wait: true,
-            program: '"%P360HOME%\..\..\InstallationState\setup.exe"',
-            arguments: ['/uninstall', 'AllPagesNext=1']
+            program: config.uninstall.program,
+            arguments: config.uninstall.arguments
         }
     });
-	
+
+}).then(function(uninstallResults) {
+    
+    console.log(uninstallResults);
+    
+    return util.forEach(config.databases, function(database) {
+        console.log('Cleaning database ' + JSON.stringify(database));
+        return util.request({
+            uri: targetUrl + 'resetdb', method: 'POST', json: database
+        });
+    });
+    
 }).then(function() {
 
     console.log('Launching installer...');
@@ -101,11 +127,16 @@ var bundleBuildFile = 'bundle/installer.exe';
 
     console.log('Waiting for installer to start...');
 
-    var pos = 0, lastChunk = '';
+    var pos = null, lastChunk = '', started = false;
 
     return util.until(function() {
-        return util.request(targetUrl + 'tail/' + pos).then(function(tailResult) {
-            if (tailResult.next == pos) {
+    
+        return util.request({ 
+            uri: targetUrl + 'tail',
+            method: 'POST',
+            json: pos
+        }).then(function(tailResult) {
+            if (!tailResult.text) {
                 return Q(false).delay(1000);
             }
 
@@ -114,25 +145,20 @@ var bundleBuildFile = 'bundle/installer.exe';
 
             var lastTwoChunks = lastChunk + tailResult.text;
             lastChunk = tailResult.text;
-            return lastTwoChunks.indexOf(config.endOfLog) != -1;
+            
+            if (lastTwoChunks.indexOf(config.startOfLog) != -1) {
+                started = true;
+            }
+
+            return started && lastTwoChunks.indexOf(config.endOfLog) != -1;
 
         }).catch(function(error) {
             console.error('Error when tailing', error);
             return Q(false).delay(2000);
         });
     });
-        
+
 }).catch(function(err) {
     console.error('Error', err);
 });
 
-
-
-/*
-var config = {
-    user: 'sa',
-    password: 'Help8585',
-    server: 'localhost',
-    database: 'P360MAIN'
-};
-*/
