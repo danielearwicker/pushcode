@@ -31,7 +31,7 @@ module.exports = {
         database: 'P360AUDIT'
     }],
     
-    startOfLog: '\nInstalling',
-    endOfLog: '\nLeaving Main'
+    startOfLog: 'Installing',
+    endOfLog: 'Leaving Main'
 };
 

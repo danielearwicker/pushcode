@@ -127,7 +127,25 @@ var bundleBuildFile = 'bundle/installer.exe';
 
     console.log('Waiting for installer to start...');
 
-    var pos = null, lastChunk = '', started = false;
+    var lineBuffer = (function() {
+        var wholeLines = [], partialLine = null;
+        return {
+            ready: function() {
+                return !!wholeLines.length;
+            },
+            read: function() {
+                return wholeLines.shift();
+            },
+            fill: function(text) {
+                var received = text.split('\n');
+                wholeLines.push((partialLine || '') + received[0]);
+                wholeLines = wholeLines.concat(received.slice(1, received.length - 1));
+                partialLine = received[received.length - 1];
+            }
+        };
+    })();
+    
+    var pos = null, started = false;
 
     return util.until(function() {
     
@@ -140,17 +158,20 @@ var bundleBuildFile = 'bundle/installer.exe';
                 return Q(false).delay(1000);
             }
 
-            process.stdout.write(tailResult.text);
+            lineBuffer.fill(tailResult.text);
             pos = tailResult.next;
-
-            var lastTwoChunks = lastChunk + tailResult.text;
-            lastChunk = tailResult.text;
-            
-            if (lastTwoChunks.indexOf(config.startOfLog) != -1) {
-                started = true;
+           
+            while (lineBuffer.ready()) {
+                var line = lineBuffer.read();
+                console.log(line);
+                
+                if (line == config.startOfLog) {
+                    started = true;
+                } else if ((line == config.endOfLog) && started) {
+                    return true;
+                }
             }
-
-            return started && lastTwoChunks.indexOf(config.endOfLog) != -1;
+            return false;
 
         }).catch(function(error) {
             console.error('Error when tailing', error);

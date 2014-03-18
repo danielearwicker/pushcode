@@ -81,7 +81,7 @@ app.post('/exec', util.callback(function(req) {
 }));
 
 app.post('/resetdb', util.callback(function(req) {
-	return resetdb.withConfig(req.config);
+	return resetdb.withConfig(req.body);
 }));
 
 http.createServer(app).listen(config.port, function() {
