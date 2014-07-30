@@ -8,7 +8,11 @@ var util = require('./util.js');
 
 var targetUrl = 'http://' + config.targetMachine + ':' + config.port + '/';
 
-var localBuildFile = process.argv[2];
+var localBuildFile = process.argv[2], jenkinsKey = config.jenkins.defaultBuild;
+if (localBuildFile && localBuildFile[0] === '-') {
+    jenkinsKey = localBuildFile.substr(1);
+    localBuildFile = null;
+}
 
 var bundleBuildFile = 'bundle/installer.exe';
 
@@ -22,10 +26,19 @@ var bundleBuildFile = 'bundle/installer.exe';
         return d.promise;
     }
 
-    return util.request({ uri: config.jenkinsUrl, auth: config.jenkinsAuth }).then(function(body) {
-            
+    var jenkinsUrl = config.jenkins.builds[jenkinsKey];
+    if (!jenkinsUrl) {
+        throw new Error('Invalid jenkins build: ' + jenkinsKey);
+    }
+    
+    console.log('Logging into jenkins (' + jenkinsKey + ') at ' + jenkinsUrl);
+    
+    return util.request({ uri: jenkinsUrl, auth: config.jenkins.auth }).then(function(body) {
+
         var m = body.match(/\<a\s*href=\"(PRISYM%20360\-.+\.exe)\"\>/);
         if (!m || m.length < 2) {
+            console.log(body);
+        
             throw new Error('Could not find installer link on page');
         }
         return m[1];
@@ -34,8 +47,8 @@ var bundleBuildFile = 'bundle/installer.exe';
 
         console.log('Downloading ' + installerName);
         return util.request({ 
-            uri: config.jenkinsUrl + installerName, 
-            auth: config.jenkinsAuth }, 
+            uri: jenkinsUrl + installerName, 
+            auth: config.jenkins.auth }, 
             fs.createWriteStream(bundleBuildFile)
         );
     });
@@ -79,7 +92,7 @@ var bundleBuildFile = 'bundle/installer.exe';
         uri: targetUrl + 'exec',
         method: 'POST',
         json: {
-			wait: true,
+            wait: true,
             program: 'taskkill',
             arguments: ['/F', '/IM', 'chrome.exe']
         }
@@ -94,7 +107,7 @@ var bundleBuildFile = 'bundle/installer.exe';
         uri: targetUrl + 'exec',
         method: 'POST',
         json: {
-			wait: true,
+            wait: true,
             program: config.uninstall.program,
             arguments: config.uninstall.arguments
         }

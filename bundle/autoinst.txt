@@ -1,17 +1,19 @@
 
+ServerName=EARWICKER
+
 DataDir=C:\ProgramData\Prisym360InstallData
 
 DbInstallerPage_databaseDescription=whatEVER
 
 DbInstallerPage_databaseType=SQL Server
-DbInstallerPage_sqlServer=EARWICKER
+DbInstallerPage_sqlServer=$(ServerName)
 DbInstallerPage_databaseName=P360MAIN
 DbInstallerPage_nativeSecurity=yes
 DbInstallerPage_sqlUsername=sa
 DbInstallerPage_password=Help8585
 
 DbInstallerPage_Audit-databaseType=SQL Server
-DbInstallerPage_Audit-sqlServer=EARWICKER
+DbInstallerPage_Audit-sqlServer=$(ServerName)
 DbInstallerPage_Audit-databaseName=P360AUDIT
 DbInstallerPage_Audit-nativeSecurity=yes
 DbInstallerPage_Audit-sqlUsername=sa
